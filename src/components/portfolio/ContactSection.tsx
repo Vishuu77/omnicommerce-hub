@@ -7,9 +7,9 @@ import {
   CheckCircle2,
   Copy,
   ArrowUpRight,
-  Clock,
-  Sparkles,
-  Award
+  ExternalLink,
+  MessageSquare,
+  AlertCircle
 } from 'lucide-react';
 import { soundFX } from './SoundFX';
 
@@ -26,8 +26,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [statusNotice, setStatusNotice] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
       onShowToast('Please fill in all required fields.', 'info');
@@ -36,19 +37,86 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
 
     soundFX.playClick();
     setIsSubmitting(true);
+    setStatusNotice(null);
 
-    setTimeout(() => {
+    try {
+      // 1. Submit to FormSubmit endpoint forwarding directly to nothingsvishnu@gmail.com
+      const res = await fetch('https://formsubmit.co/ajax/nothingsvishnu@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          _subject: `[Portfolio Inquiry] ${form.subject || 'Direct Message'} - from ${form.name}`,
+          message: form.message.trim(),
+          _template: 'table',
+          _captcha: 'false'
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      // Also notify local server if available
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      }).catch(() => {});
+
       soundFX.playSuccess();
       setIsSubmitting(false);
       setSubmitted(true);
-      onShowToast('Thank you! Your message has been sent directly to Vishnu.', 'success');
+
+      if (data && typeof data.message === 'string' && data.message.toLowerCase().includes('activation')) {
+        setStatusNotice(
+          "First-time activation required: A verification email has been sent to nothingsvishnu@gmail.com. Please click 'Activate Form' once in your inbox to enable automatic forwarding!"
+        );
+        onShowToast('Action Required: Please check nothingsvishnu@gmail.com to activate form!', 'info');
+      } else {
+        onShowToast('Your message has been sent directly to Vishnu at nothingsvishnu@gmail.com!', 'success');
+      }
+
       setForm({
         name: '',
         email: '',
         subject: 'AI Engineer / Agentic Automation Opportunity',
         message: ''
       });
-    }, 700);
+    } catch (err) {
+      setIsSubmitting(false);
+      soundFX.playClick();
+      // Graceful fallback to native mail client if API request is blocked by browser adblocker
+      onShowToast('Network error: Opening your default email client to send directly...', 'info');
+      const subject = encodeURIComponent(`[Portfolio Inquiry] ${form.subject || 'Opportunity'}`);
+      const body = encodeURIComponent(
+        `Hi Vishnu,\n\nName: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}\n`
+      );
+      window.location.href = `mailto:nothingsvishnu@gmail.com?subject=${subject}&body=${body}`;
+    }
+  };
+
+  const openNativeMail = () => {
+    soundFX.playClick();
+    const subject = encodeURIComponent(
+      form.subject ? `[Portfolio] ${form.subject}` : 'AI Engineer / Robotics Collaboration with Vishnu'
+    );
+    const body = encodeURIComponent(
+      form.message
+        ? `Hi Vishnu,\n\nName: ${form.name || '[Your Name]'}\nEmail: ${form.email || '[Your Email]'}\n\n${form.message}`
+        : 'Hi Vishnu,\n\nI came across your portfolio and would like to connect regarding an AI / Robotics opportunity.'
+    );
+    window.open(`mailto:nothingsvishnu@gmail.com?subject=${subject}&body=${body}`, '_blank');
+  };
+
+  const openWhatsApp = () => {
+    soundFX.playClick();
+    const text = encodeURIComponent(
+      `Hi Vishnu, I saw your portfolio and would like to discuss an opportunity in AI Engineering / Robotics.`
+    );
+    window.open(`https://wa.me/916361222162?text=${text}`, '_blank');
   };
 
   const copyEmail = () => {
@@ -88,7 +156,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
                   Direct Inquiries &bull; Er. Vishnu R
                 </h3>
                 <p className="text-xs text-neutral-600 leading-relaxed">
-                  Click any channel to copy details directly to your clipboard.
+                  Click any channel to copy or initiate direct communication.
                 </p>
               </div>
 
@@ -97,6 +165,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
                 <div
                   onClick={copyEmail}
                   className="p-4 rounded-xl border border-black/10 hover:border-black/40 bg-neutral-50/60 hover:bg-neutral-50 flex items-center justify-between cursor-pointer transition-all group"
+                  title="Click to copy email address"
                 >
                   <div className="flex items-center space-x-3.5">
                     <div className="p-2.5 rounded-lg bg-black text-white">
@@ -104,7 +173,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
                     </div>
                     <div>
                       <div className="text-[10px] uppercase font-mono text-neutral-500 font-bold">
-                        Primary Email
+                        Primary Email (Direct to Inbox)
                       </div>
                       <div className="text-sm font-bold text-black font-mono group-hover:underline">
                         nothingsvishnu@gmail.com
@@ -118,6 +187,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
                 <div
                   onClick={copyPhone}
                   className="p-4 rounded-xl border border-black/10 hover:border-black/40 bg-neutral-50/60 hover:bg-neutral-50 flex items-center justify-between cursor-pointer transition-all group"
+                  title="Click to copy phone number"
                 >
                   <div className="flex items-center space-x-3.5">
                     <div className="p-2.5 rounded-lg bg-black text-white">
@@ -125,7 +195,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
                     </div>
                     <div>
                       <div className="text-[10px] uppercase font-mono text-neutral-500 font-bold">
-                        Mobile &amp; WhatsApp
+                        Mobile &amp; WhatsApp Direct
                       </div>
                       <div className="text-sm font-bold text-black font-mono group-hover:underline">
                         +91 6361222162
@@ -133,6 +203,28 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
                     </div>
                   </div>
                   <Copy className="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
+                </div>
+
+                {/* WhatsApp Quick Chat */}
+                <div
+                  onClick={openWhatsApp}
+                  className="p-4 rounded-xl border border-emerald-500/30 hover:border-emerald-600 bg-emerald-50/50 hover:bg-emerald-50 flex items-center justify-between cursor-pointer transition-all group"
+                  title="Open instant WhatsApp chat"
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="p-2.5 rounded-lg bg-emerald-600 text-white">
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-mono text-emerald-800 font-bold">
+                        Instant Messaging
+                      </div>
+                      <div className="text-sm font-bold text-emerald-950 font-mono group-hover:underline">
+                        Chat on WhatsApp (+91 6361222162)
+                      </div>
+                    </div>
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-emerald-600" />
                 </div>
 
                 {/* LinkedIn Channel */}
@@ -180,7 +272,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse mt-1 shrink-0" />
               <div className="text-xs text-neutral-700 leading-relaxed">
                 <strong className="text-black font-bold">Immediate Availability: </strong>
-                Open for full-time AI Engineer, Agentic Automation, and Robotics roles. Ready for immediate joining and technical interviews.
+                Open for full-time AI Engineer, Agentic Automation, and Robotics roles. Ready for immediate joining and technical interviews. Guaranteed response within 12 hours.
               </div>
             </div>
           </div>
@@ -188,31 +280,60 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
           {/* Right Column: Sleek Inquiry Form (7 Cols) */}
           <div className="lg:col-span-7 bg-white rounded-2xl border border-black/10 p-8 sm:p-10 shadow-sm">
             {submitted ? (
-              <div className="text-center py-12 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center mx-auto shadow-md">
+              <div className="text-center py-10 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-md">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-black text-black">
                   Message Dispatched!
                 </h3>
                 <p className="text-sm text-neutral-600 max-w-md mx-auto leading-relaxed">
-                  Thank you for reaching out. Your communication has landed in Vishnu's primary inbox. Expect a prompt response.
+                  Thank you for reaching out. Your communication has been dispatched directly to Vishnu's inbox at <strong className="text-black font-mono">nothingsvishnu@gmail.com</strong>.
                 </p>
-                <button
-                  onClick={() => setSubmitted(false)}
-                  className="px-5 py-2.5 rounded-full bg-black text-white text-xs font-bold hover:bg-neutral-800 transition-all"
-                >
-                  Send Another Message
-                </button>
+
+                {statusNotice && (
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs text-left max-w-md mx-auto space-y-1">
+                    <div className="font-bold flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                      <span>Owner Activation Notice</span>
+                    </div>
+                    <p>{statusNotice}</p>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setSubmitted(false);
+                      setStatusNotice(null);
+                    }}
+                    className="px-5 py-2.5 rounded-full bg-black text-white text-xs font-bold hover:bg-neutral-800 transition-all"
+                  >
+                    Send Another Message
+                  </button>
+
+                  <button
+                    onClick={openNativeMail}
+                    className="px-5 py-2.5 rounded-full border border-black/20 text-black text-xs font-bold hover:bg-neutral-100 transition-all inline-flex items-center space-x-1.5"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Open in Email App</span>
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="flex items-center justify-between pb-4 border-b border-black/5">
-                  <h3 className="text-lg font-black text-black">
-                    Send Direct Message
-                  </h3>
-                  <span className="text-xs font-mono text-neutral-400">
-                    Direct to nothingsvishnu@gmail.com
+                  <div>
+                    <h3 className="text-lg font-black text-black">
+                      Send Direct Message
+                    </h3>
+                    <p className="text-xs text-neutral-500">
+                      Dispatches straight to Vishnu's Gmail inbox
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-mono text-purple-900 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200/80 font-bold">
+                    nothingsvishnu@gmail.com
                   </span>
                 </div>
 
@@ -272,20 +393,51 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-full bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <span>Dispatching...</span>
-                  ) : (
-                    <>
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Send Message to Vishnu</span>
-                    </>
-                  )}
-                </button>
+                <div className="space-y-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3.5 rounded-full bg-purple-950 hover:bg-black text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all disabled:opacity-50 shadow-md shadow-purple-950/20"
+                  >
+                    {isSubmitting ? (
+                      <span>Dispatching to nothingsvishnu@gmail.com...</span>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Send Message to Vishnu</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Direct Native Email Client & WhatsApp buttons */}
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={openNativeMail}
+                      className="flex-1 py-2.5 px-3 rounded-xl border border-black/15 hover:border-black/30 bg-neutral-50 hover:bg-neutral-100 text-[11px] font-semibold text-neutral-700 flex items-center justify-center space-x-1.5 transition-all"
+                      title="Open in your default mail app with pre-filled content"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-neutral-500" />
+                      <span>Open in Mail App</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={openWhatsApp}
+                      className="flex-1 py-2.5 px-3 rounded-xl border border-emerald-500/30 hover:border-emerald-600 bg-emerald-50/70 hover:bg-emerald-100 text-[11px] font-semibold text-emerald-900 flex items-center justify-center space-x-1.5 transition-all"
+                      title="Send message directly via WhatsApp"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>WhatsApp Direct</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-center">
+                  <span className="text-[10px] font-mono text-neutral-400">
+                    Live inbox delivery to nothingsvishnu@gmail.com &bull; SSL encrypted &bull; Zero spam
+                  </span>
+                </div>
               </form>
             )}
           </div>

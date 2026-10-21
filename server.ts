@@ -726,6 +726,19 @@ async function startServer() {
     }
   });
 
+  // Portfolio Contact API Endpoint
+  app.post('/api/contact', (req: Request, res: Response) => {
+    try {
+      const { name, email, subject, message } = req.body;
+      console.log(`\n📬 [PORTFOLIO INQUIRY] From: ${name} <${email}>`);
+      console.log(`   Topic: ${subject || 'General'}`);
+      console.log(`   Message: ${message}\n`);
+      return res.json({ success: true, message: 'Inquiry received' });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // Standalone HTML portal routes
   app.get('/customer-portal.html', (req: Request, res: Response) => {
     res.sendFile(path.resolve(__dirname, 'customer-portal.html'));
