@@ -1,0 +1,8 @@
+"Phone","Name","Email","Address","City","Pincode","Role","RegisteredAt","LastLoginAt"
+"6361222162","Vishnu (Demo Customer)","vishnu@example.com","#42, 4th Cross, 100 Feet Road, Indiranagar","Bengaluru","560038","Customer","2026-10-01 10:00:00","2026-10-08 15:50:00"
+"9876543210","Priya Sharma","priya.sharma@example.com","Flat 204, Green Heights, Powai","Mumbai","400076","Customer","2026-10-02 11:30:00","2026-10-08 15:50:00"
+"9811223344","Rajesh Kumar","rajesh.kumar@delhitech.in","B-12, Barakhamba Road, Connaught Place","New Delhi","110001","Customer","2026-10-03 09:15:00","2026-10-08 15:50:00"
+"9744556677","Sneha Patel","sneha.patel@gujaratmall.com","702, Iscon Elegance, SG Highway","Ahmedabad","380015","Customer","2026-10-04 14:40:00","2026-10-08 15:50:00"
+"9633221100","Amit Verma","amit.verma@gamersguild.in","Plot 88, Silicon Valley, Hitec City","Hyderabad","500081","Customer","2026-10-05 16:20:00","2026-10-08 15:50:00"
+"9123456789","Employee Administrator","admin@omnicommerce.internal","Corporate HQ, Outer Ring Road","Bengaluru","560103","Employee_Admin","2026-09-01 09:00:00","2026-10-08 15:50:00"
+"9822334455","Rohan Mehta","rohan@example.com","7th Main, Koramangala","Bengaluru","560034","Customer","2026-10-08 12:16:00","2026-10-08 12:16:00"

@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniCommerce CRM - Employee Back-Office Fulfillment & Inventory</title>
+  <meta name="description" content="Back-office CRM dashboard for employees to manage inventory, customer orders, fulfillment pipelines, and Google Sheets database.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .status-badge-Pending { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .status-badge-Packed { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .status-badge-Shipped { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+    .status-badge-Delivered { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .status-badge-Cancelled { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER / CRM NAV BAR -->
+  <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand & Section -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 text-white p-2 rounded-lg shadow-md flex items-center justify-center">
+          <i class="fa-solid fa-boxes-packing text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-lg font-black tracking-tight text-white">OmniCommerce</span>
+            <span class="bg-indigo-950 text-indigo-400 border border-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Back-Office CRM</span>
+          </div>
+          <span class="text-xs text-slate-400">Employee Fulfillment &bull; Google Sheets DB Pipeline</span>
+        </div>
+      </div>
+
+      <!-- Quick Switch to Customer View -->
+      <div class="flex items-center space-x-3">
+        <a href="/" class="inline-flex items-center space-x-1.5 bg-gradient-to-r from-cyan-950 to-indigo-950 hover:from-cyan-900 hover:to-indigo-900 text-cyan-300 border border-cyan-500/40 font-semibold px-3 py-1.5 rounded-lg shadow text-xs transition-all">
+          <i class="fa-solid fa-arrow-left text-[10px]"></i>
+          <span>Vish's Portfolio</span>
+        </a>
+        <a href="/customer-portal.html" class="inline-flex items-center space-x-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg shadow text-xs transition-colors">
+          <i class="fa-solid fa-store"></i>
+          <span>Open Customer Portal (Amazon/Flipkart UI)</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+        </a>
+
+        <!-- Admin Identity Pill -->
+        <div class="hidden md:flex items-center space-x-2 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-300 font-medium">Emp: <strong>Vishnu (Lead Ops)</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- METRICS KPI STRIP -->
+  <section class="bg-slate-950/50 border-b border-slate-800/80 py-4 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <!-- Total Revenue -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 flex items-center space-x-3">
+        <div class="bg-emerald-500/10 text-emerald-400 p-2.5 rounded-lg text-lg border border-emerald-500/20">
+          <i class="fa-solid fa-indian-rupee-sign"></i>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Sales</span>
+          <h4 id="kpiRevenue" class="text-base font-black text-white">₹0</h4>
+        </div>
+      </div>
+
+      <!-- Pending Fulfillment -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 flex items-center space-x-3">
+        <div class="bg-amber-500/10 text-amber-400 p-2.5 rounded-lg text-lg border border-amber-500/20">
+          <i class="fa-solid fa-clock"></i>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Pending Orders</span>
+          <h4 id="kpiPendingOrders" class="text-base font-black text-amber-400">0</h4>
+        </div>
+      </div>
+
+      <!-- Return Requests -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 flex items-center space-x-3">
+        <div class="bg-purple-500/10 text-purple-400 p-2.5 rounded-lg text-lg border border-purple-500/20">
+          <i class="fa-solid fa-rotate-left"></i>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Return Requests</span>
+          <h4 id="kpiReturns" class="text-base font-black text-purple-400">0</h4>
+        </div>
+      </div>
+
+      <!-- Live Support Tickets -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 flex items-center space-x-3">
+        <div class="bg-indigo-500/10 text-indigo-400 p-2.5 rounded-lg text-lg border border-indigo-500/20">
+          <i class="fa-solid fa-headset"></i>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Support Desk</span>
+          <h4 id="kpiSupport" class="text-base font-black text-indigo-400">0 Active</h4>
+        </div>
+      </div>
+
+      <!-- Google Sheets Engine -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 flex items-center space-x-3">
+        <div class="bg-blue-500/10 text-blue-400 p-2.5 rounded-lg text-lg border border-blue-500/20">
+          <i class="fa-solid fa-table"></i>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Sheets DB</span>
+          <h4 id="kpiSheetsSync" class="text-base font-black text-blue-400">5 Sheets</h4>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NAVIGATION TABS -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 w-full">
+    <div class="border-b border-slate-800 flex space-x-2 sm:space-x-4 overflow-x-auto">
+      <button onclick="switchTab('orders')" id="tabBtn-orders" class="crm-tab-btn px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 border-blue-500 text-blue-400 flex items-center space-x-2">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span>Order Fulfillment</span>
+        <span id="tabOrderCountBadge" class="bg-blue-900/60 text-blue-300 text-[10px] px-1.5 py-0.5 rounded-full">0</span>
+      </button>
+      <button onclick="switchTab('returns')" id="tabBtn-returns" class="crm-tab-btn px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-rotate-left"></i>
+        <span>Returns &amp; Refunds</span>
+        <span id="tabReturnCountBadge" class="bg-purple-900/60 text-purple-300 text-[10px] px-1.5 py-0.5 rounded-full">0</span>
+      </button>
+      <button onclick="switchTab('support')" id="tabBtn-support" class="crm-tab-btn px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-headset text-indigo-400"></i>
+        <span>Support Desk &amp; Live Chat</span>
+        <span id="tabSupportCountBadge" class="bg-indigo-900/80 text-indigo-200 text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse">0</span>
+      </button>
+      <button onclick="switchTab('inventory')" id="tabBtn-inventory" class="crm-tab-btn px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-warehouse"></i>
+        <span>Inventory &amp; Stock</span>
+      </button>
+      <button onclick="switchTab('customers')" id="tabBtn-customers" class="crm-tab-btn px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-users"></i>
+        <span>Customer Directory</span>
+      </button>
+      <button onclick="switchTab('sheets')" id="tabBtn-sheets" class="crm-tab-btn px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-file-csv"></i>
+        <span>Google Sheets Console</span>
+      </button>
+      <button onclick="switchTab('agent')" id="tabBtn-agent" class="crm-tab-btn px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+        <i class="fa-solid fa-robot text-emerald-400"></i>
+        <span>AI Agent (Hexa)</span>
+        <span id="tabAgentBadge" class="bg-emerald-900/60 text-emerald-300 text-[10px] px-1.5 py-0.5 rounded-full">ON</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN TAB CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+
+    <!-- ============================================== -->
+    <!-- TAB 1: ORDER FULFILLMENT CENTER -->
+    <!-- ============================================== -->
+    <section id="tabContent-orders" class="tab-panel space-y-4">
+      <!-- Filter & Action Controls -->
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 flex flex-wrap items-center justify-between gap-3">
+        <!-- Search -->
+        <div class="relative flex-1 min-w-[240px]">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" id="orderSearchInput" placeholder="Search Order ID, Customer Phone (6361222162), Tracking No..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-500">
+        </div>
+
+        <!-- Status Filter Buttons -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto text-xs font-semibold">
+          <button onclick="filterOrders('All')" class="order-filter-btn px-3 py-1.5 rounded-lg bg-blue-600 text-white" data-status="All">All</button>
+          <button onclick="filterOrders('Pending')" class="order-filter-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600" data-status="Pending">Pending</button>
+          <button onclick="filterOrders('Packed')" class="order-filter-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600" data-status="Packed">Packed</button>
+          <button onclick="filterOrders('Shipped')" class="order-filter-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600" data-status="Shipped">Shipped</button>
+          <button onclick="filterOrders('Delivered')" class="order-filter-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600" data-status="Delivered">Delivered</button>
+          <button onclick="filterOrders('Return Requested')" class="order-filter-btn px-3 py-1.5 rounded-lg bg-slate-700 text-purple-300 hover:bg-slate-600 flex items-center space-x-1" data-status="Return Requested">
+            <i class="fa-solid fa-rotate-left mr-1"></i>
+            <span>Return Requested</span>
+          </button>
+        </div>
+
+        <!-- Sync Button -->
+        <button onclick="fetchCrmOrders()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 border border-slate-600">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>Refresh Queue</span>
+        </button>
+      </div>
+
+      <!-- Orders Table -->
+      <div class="bg-slate-800/80 rounded-xl border border-slate-700/80 overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-4">Order &amp; Date</th>
+                <th class="py-3 px-4">Customer Details</th>
+                <th class="py-3 px-4">Ordered Items</th>
+                <th class="py-3 px-4">Amount &amp; Pay</th>
+                <th class="py-3 px-4">Fulfillment Status</th>
+                <th class="py-3 px-4 text-center">Fulfillment Action</th>
+              </tr>
+            </thead>
+            <tbody id="crmOrdersTableBody" class="divide-y divide-slate-700/60">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB: RETURNS & REFUNDS MANAGEMENT -->
+    <!-- ============================================== -->
+    <section id="tabContent-returns" class="tab-panel hidden space-y-4">
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-rotate-left text-purple-400 text-lg"></i>
+          <div>
+            <h3 class="text-sm font-bold text-white">Customer Returns &amp; Replacement Management</h3>
+            <p class="text-xs text-slate-400">Review reason, schedule courier pickup, simulate refund, and restock Google Sheets inventory.</p>
+          </div>
+        </div>
+        <button onclick="fetchCrmOrders()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600">
+          <i class="fa-solid fa-arrows-rotate mr-1"></i> Refresh Returns
+        </button>
+      </div>
+
+      <div class="bg-slate-800/80 rounded-xl border border-slate-700/80 overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-4">Order ID &amp; Customer</th>
+                <th class="py-3 px-4">Return Reason &amp; Feedback</th>
+                <th class="py-3 px-4">Resolution Type</th>
+                <th class="py-3 px-4">Refund Amount</th>
+                <th class="py-3 px-4">Return Status</th>
+                <th class="py-3 px-4 text-center">Fulfillment Actions</th>
+              </tr>
+            </thead>
+            <tbody id="crmReturnsTableBody" class="divide-y divide-slate-700/60">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: INVENTORY & STOCK MANAGEMENT -->
+    <!-- ============================================== -->
+    <section id="tabContent-inventory" class="tab-panel hidden space-y-4">
+      <!-- Toolbar -->
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-sm font-bold text-white"><i class="fa-solid fa-boxes-stacked text-blue-400 mr-1.5"></i> Google Sheets Products Inventory</span>
+          <span class="text-xs text-slate-400">&bull; Auto-decrements upon customer checkout</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="openNewProductModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow flex items-center space-x-1.5">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add New Product to Sheets</span>
+          </button>
+          <button onclick="fetchInventory()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="bg-slate-800/80 rounded-xl border border-slate-700/80 overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-4">Product Info</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4">Price (INR)</th>
+                <th class="py-3 px-4">Stock Level</th>
+                <th class="py-3 px-4">Stock Status</th>
+                <th class="py-3 px-4 text-center">Quick Stock Adjustment</th>
+              </tr>
+            </thead>
+            <tbody id="crmInventoryTableBody" class="divide-y divide-slate-700/60">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 3: CUSTOMER DIRECTORY & CRM -->
+    <!-- ============================================== -->
+    <section id="tabContent-customers" class="tab-panel hidden space-y-4">
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-id-card text-emerald-400 mr-2"></i> Registered Customers (Google Sheets Users Tab)</h3>
+          <p class="text-xs text-slate-400">Captured through Phone OTP authentication and checkout addresses.</p>
+        </div>
+        <button onclick="fetchCustomers()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600">
+          <i class="fa-solid fa-arrows-rotate mr-1"></i> Refresh Customers
+        </button>
+      </div>
+
+      <div class="bg-slate-800/80 rounded-xl border border-slate-700/80 overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-slate-700">
+              <tr>
+                <th class="py-3 px-4">Customer Phone</th>
+                <th class="py-3 px-4">Full Name</th>
+                <th class="py-3 px-4">Delivery Address &amp; City</th>
+                <th class="py-3 px-4">Orders Placed</th>
+                <th class="py-3 px-4">Lifetime Spend</th>
+                <th class="py-3 px-4">Last Activity</th>
+              </tr>
+            </thead>
+            <tbody id="crmCustomersTableBody" class="divide-y divide-slate-700/60">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 4: GOOGLE SHEETS PERSISTENCE CONSOLE -->
+    <!-- ============================================== -->
+    <section id="tabContent-sheets" class="tab-panel hidden space-y-6">
+      <!-- Sync Status Card -->
+      <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700/80">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <div class="bg-emerald-500/20 text-emerald-400 p-3 rounded-xl border border-emerald-500/30 text-2xl">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-base">Google Sheets Persistent Engine</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Mode: <strong class="text-emerald-400">Persistent CSV Google Sheets Tables</strong> &bull; Location: <code class="bg-slate-900 px-1 py-0.5 rounded text-slate-300">/data/google_sheets_*.csv</code></p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="fetchSheetsStats()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1.5 shadow">
+              <i class="fa-solid fa-rotate"></i>
+              <span>Verify Sheets Persistence</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Sheets Tabs Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-700/60">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-300">Sheet: Users</span>
+              <span class="bg-blue-900/40 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-800">TAB 1</span>
+            </div>
+            <div id="sheetUsersCount" class="text-xl font-black text-white mt-2">-- Rows</div>
+            <button onclick="viewRawCsv('users')" class="text-blue-400 hover:underline text-[11px] mt-2 block font-medium">
+              View Raw CSV &rarr;
+            </button>
+          </div>
+
+          <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-700/60">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-300">Sheet: Products</span>
+              <span class="bg-amber-900/40 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-800">TAB 2</span>
+            </div>
+            <div id="sheetProductsCount" class="text-xl font-black text-white mt-2">-- Rows</div>
+            <button onclick="viewRawCsv('products')" class="text-amber-400 hover:underline text-[11px] mt-2 block font-medium">
+              View Raw CSV &rarr;
+            </button>
+          </div>
+
+          <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-700/60">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-300">Sheet: Orders</span>
+              <span class="bg-emerald-900/40 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-800">TAB 3</span>
+            </div>
+            <div id="sheetOrdersCount" class="text-xl font-black text-white mt-2">-- Rows</div>
+            <button onclick="viewRawCsv('orders')" class="text-emerald-400 hover:underline text-[11px] mt-2 block font-medium">
+              View Raw CSV &rarr;
+            </button>
+          </div>
+
+          <div class="bg-slate-900/80 p-3.5 rounded-lg border border-slate-700/60">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-300">Sheet: Cart</span>
+              <span class="bg-purple-900/40 text-purple-400 text-[10px] font-bold px-2 py-0.5 rounded border border-purple-800">TAB 4</span>
+            </div>
+            <div id="sheetCartCount" class="text-xl font-black text-white mt-2">-- Rows</div>
+            <button onclick="viewRawCsv('cart')" class="text-purple-400 hover:underline text-[11px] mt-2 block font-medium">
+              View Raw CSV &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Raw CSV Viewer Section -->
+      <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700/80">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-code text-blue-400"></i>
+            <h4 id="rawCsvTitle" class="font-bold text-white text-sm">Raw Google Sheets CSV Inspection</h4>
+          </div>
+          <button onclick="copyRawCsv()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-2.5 py-1 rounded font-semibold border border-slate-600">
+            <i class="fa-solid fa-copy mr-1"></i> Copy CSV
+          </button>
+        </div>
+        <pre id="rawCsvOutput" class="bg-slate-950 p-4 rounded-lg font-mono text-xs text-emerald-400 overflow-x-auto max-h-72 border border-slate-800 scrollbar-thin">Click 'View Raw CSV' above to inspect Google Sheets tabular content.</pre>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 6: SUPPORT DESK & LIVE CHAT CENTER -->
+    <!-- ============================================== -->
+    <section id="tabContent-support" class="tab-panel hidden space-y-4">
+      <!-- Desk Control Header -->
+      <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 flex flex-wrap items-center justify-between gap-3 shadow-md">
+        <div class="flex items-center space-x-3">
+          <div class="bg-indigo-600 text-white p-2.5 rounded-lg shadow">
+            <i class="fa-solid fa-headset text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+              <span>Customer Care &amp; Support Executive Studio</span>
+              <span class="bg-indigo-900/60 text-indigo-300 text-[10px] px-2 py-0.5 rounded uppercase font-bold border border-indigo-700">Real-Time Sync</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Live two-way communication between backend support executive and customer regarding order status, returns, or replacements.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <button onclick="openNewOutboundTicketModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow flex items-center space-x-1.5 transition">
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            <span>New Outbound Ticket</span>
+          </button>
+          <button onclick="fetchSupportTickets()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-600 flex items-center space-x-1">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2-Column Split Desk -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[620px]">
+        <!-- Left Column: Tickets Queue (4 cols) -->
+        <div class="lg:col-span-4 bg-slate-800/80 rounded-xl border border-slate-700 flex flex-col overflow-hidden shadow-xl">
+          <div class="p-3 border-b border-slate-700 space-y-2 bg-slate-900/60">
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" id="supportSearchInput" oninput="filterSupportTickets()" placeholder="Search phone, ticket #, order..." class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500">
+            </div>
+            <div class="flex space-x-1 text-xs">
+              <button onclick="setSupportStatusFilter('All')" class="support-filter-btn flex-1 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white" data-filter="All">All</button>
+              <button onclick="setSupportStatusFilter('Open')" class="support-filter-btn flex-1 py-1 rounded text-[11px] font-bold bg-slate-800 text-slate-400 hover:text-white" data-filter="Open">Open</button>
+              <button onclick="setSupportStatusFilter('In Progress')" class="support-filter-btn flex-1 py-1 rounded text-[11px] font-bold bg-slate-800 text-slate-400 hover:text-white" data-filter="In Progress">In Progress</button>
+              <button onclick="setSupportStatusFilter('Resolved')" class="support-filter-btn flex-1 py-1 rounded text-[11px] font-bold bg-slate-800 text-slate-400 hover:text-white" data-filter="Resolved">Resolved</button>
+            </div>
+          </div>
+
+          <!-- Ticket List -->
+          <div id="supportTicketsList" class="flex-1 overflow-y-auto divide-y divide-slate-700/50 p-1.5 space-y-1 max-h-[540px]">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Right Column: Live Conversation Studio (8 cols) -->
+        <div id="supportConversationPanel" class="lg:col-span-8 bg-slate-800/80 rounded-xl border border-slate-700 flex flex-col overflow-hidden shadow-xl">
+          <!-- Rendered dynamically when ticket is selected -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 7: AI AGENT (HEXA) CONTROL ROOM            -->
+    <!-- ============================================== -->
+    <section id="tabContent-agent" class="tab-panel hidden space-y-4">
+
+      <!-- Agent status header -->
+      <div class="bg-gradient-to-r from-emerald-950 to-slate-900 border border-emerald-800 rounded-xl p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-11 h-11 rounded-full bg-emerald-900/70 border border-emerald-700 flex items-center justify-center">
+              <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
+            </div>
+            <div>
+              <h2 class="text-white font-black text-lg flex items-center space-x-2">
+                <span>Hexa</span>
+                <span id="agentStatusPill" class="bg-emerald-900/70 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-bold">CHECKING…</span>
+              </h2>
+              <p class="text-emerald-300/70 text-xs" id="agentScope">Autonomous CRM Operations Agent</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="runAgentPlan()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2.5 rounded-lg text-xs transition border border-slate-700">
+              <i class="fa-solid fa-eye mr-1"></i> Preview (dry run)
+            </button>
+            <button onclick="runAgentNow()" id="agentRunBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-lg text-xs transition shadow">
+              <i class="fa-solid fa-play mr-1"></i> Run Agent Now
+            </button>
+          </div>
+        </div>
+        <p class="text-slate-400 text-[11px] mt-3">
+          Safety rail: the agent never moves money. It advances returns up to
+          <span class="text-emerald-300 font-bold">Item Picked Up</span> and flags the refund for a human.
+        </p>
+      </div>
+
+      <!-- Observed state KPIs -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-lg p-3">
+          <p class="text-slate-400 text-[10px] uppercase font-bold">Orders</p>
+          <p class="text-white font-black text-xl" id="agentKpiOrders">—</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-lg p-3">
+          <p class="text-slate-400 text-[10px] uppercase font-bold">Open Tickets</p>
+          <p class="text-white font-black text-xl" id="agentKpiOpenTickets">—</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-lg p-3">
+          <p class="text-slate-400 text-[10px] uppercase font-bold">Returns In Flight</p>
+          <p class="text-white font-black text-xl" id="agentKpiReturns">—</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-lg p-3">
+          <p class="text-slate-400 text-[10px] uppercase font-bold">Low Stock</p>
+          <p class="text-white font-black text-xl" id="agentKpiLowStock">—</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-lg p-3">
+          <p class="text-slate-400 text-[10px] uppercase font-bold">Products</p>
+          <p class="text-white font-black text-xl" id="agentKpiProducts">—</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-lg p-3">
+          <p class="text-slate-400 text-[10px] uppercase font-bold">Actions Applied</p>
+          <p class="text-white font-black text-xl" id="agentKpiActions">—</p>
+        </div>
+      </div>
+
+      <!-- Decision queue -->
+      <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-700/80 flex items-center justify-between">
+          <h3 class="text-white font-bold text-sm"><i class="fa-solid fa-list-check text-emerald-400 mr-2"></i>Decision Queue</h3>
+          <span class="text-slate-400 text-[11px]" id="agentPlanMeta">—</span>
+        </div>
+        <div id="agentDecisions" class="divide-y divide-slate-700/60">
+          <p class="text-slate-500 text-xs p-4">Loading agent plan…</p>
+        </div>
+      </div>
+
+      <!-- Audit log -->
+      <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl overflow-hidden">
+        <div class="px-4 py-3 border-b border-slate-700/80 flex items-center justify-between">
+          <h3 class="text-white font-bold text-sm"><i class="fa-solid fa-clock-rotate-left text-slate-400 mr-2"></i>Audit Log</h3>
+          <button onclick="fetchAgentLog()" class="text-slate-400 hover:text-white text-[11px] font-bold">Refresh</button>
+        </div>
+        <div id="agentLog" class="divide-y divide-slate-700/60 max-h-96 overflow-y-auto">
+          <p class="text-slate-500 text-xs p-4">Loading audit log…</p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- NEW OUTBOUND TICKET MODAL -->
+  <div id="newOutboundTicketModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-700">
+      <div class="bg-slate-900 p-4 flex items-center justify-between border-b border-slate-700">
+        <h4 class="font-bold text-white text-sm flex items-center space-x-2">
+          <i class="fa-solid fa-headset text-indigo-400"></i>
+          <span>Initiate Outbound Support Channel</span>
+        </h4>
+        <button onclick="closeNewOutboundTicketModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-5 space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1">Customer Phone Number</label>
+          <input type="text" id="outboundPhone" value="6361222162" placeholder="e.g. 6361222162" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Customer Name</label>
+          <input type="text" id="outboundCustomerName" value="Vishnu (Demo Customer)" placeholder="Customer name" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Related Order ID (Optional)</label>
+          <input type="text" id="outboundOrderId" value="ORD-88219" placeholder="e.g. ORD-88219" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Subject / Issue Topic</label>
+          <input type="text" id="outboundSubject" value="Follow-up regarding Order &amp; Replacement Status" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Initial Executive Message</label>
+          <textarea id="outboundMessage" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none focus:border-indigo-500">Hello, I am following up from OmniCommerce Backend Support regarding your order.</textarea>
+        </div>
+        <button onclick="submitNewOutboundTicket()" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-lg text-xs shadow transition">
+          Create &amp; Open Live Conversation
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD PRODUCT MODAL -->
+  <div id="newProductModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-700">
+      <div class="bg-slate-900 p-4 flex items-center justify-between border-b border-slate-700">
+        <h4 class="font-bold text-white text-sm flex items-center space-x-2">
+          <i class="fa-solid fa-plus-circle text-blue-400"></i>
+          <span>Add New Product to Sheets Catalog</span>
+        </h4>
+        <button onclick="closeNewProductModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-6 space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1">Product Title</label>
+          <input type="text" id="npTitle" placeholder="e.g. Apple iPad Air 11-inch M2" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">Category</label>
+            <select id="npCategory" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none">
+              <option value="Electronics">Electronics</option>
+              <option value="Audio">Audio</option>
+              <option value="Laptops">Laptops</option>
+              <option value="Fashion">Fashion</option>
+              <option value="Appliances">Appliances</option>
+              <option value="Home & Kitchen">Home &amp; Kitchen</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">Stock Quantity</label>
+            <input type="number" id="npStock" value="25" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">Selling Price (₹)</label>
+            <input type="number" id="npPrice" placeholder="59900" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">MRP (₹)</label>
+            <input type="number" id="npMRP" placeholder="64900" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Image URL</label>
+          <input type="text" id="npImageUrl" value="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&auto=format&fit=crop&q=80" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Product Description</label>
+          <textarea id="npDescription" rows="2" placeholder="Key specs and benefits" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white outline-none"></textarea>
+        </div>
+        <button onclick="submitNewProduct()" class="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg text-xs shadow transition">
+          Save Product to Google Sheets DB
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT -->
+  <script>
+    let allOrders = [];
+    let currentStatusFilter = 'All';
+    let rawCsvCache = '';
+    let supportTickets = [];
+    let selectedSupportTicket = null;
+    let currentSupportFilter = 'All';
+    let crmWs = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchCrmOrders();
+      fetchInventory();
+      fetchCustomers();
+      fetchSheetsStats();
+      fetchSupportTickets();
+      initCrmSupportWebSocket();
+
+      // Search listeners
+      document.getElementById('orderSearchInput').addEventListener('input', (e) => {
+        applyOrderFilters();
+      });
+    });
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+      document.querySelectorAll('.crm-tab-btn').forEach(btn => {
+        btn.classList.remove('border-blue-500', 'text-blue-400');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+
+      const activePanel = document.getElementById(`tabContent-${tabId}`);
+      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+      if (activePanel) activePanel.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-400');
+        activeBtn.classList.add('border-blue-500', 'text-blue-400');
+      }
+
+      if (tabId === 'orders') fetchCrmOrders();
+      if (tabId === 'returns') fetchCrmOrders();
+      if (tabId === 'support') fetchSupportTickets();
+      if (tabId === 'inventory') fetchInventory();
+      if (tabId === 'customers') fetchCustomers();
+      if (tabId === 'sheets') fetchSheetsStats();
+      if (tabId === 'agent') { fetchAgentStatus(); fetchAgentPlan(); fetchAgentLog(); }
+    }
+
+    // 1. ORDER FULFILLMENT LOGIC
+    async function fetchCrmOrders() {
+      try {
+        const res = await fetch('/api/orders');
+        const data = await res.json();
+        if (data.success) {
+          allOrders = data.orders;
+          document.getElementById('tabOrderCountBadge').textContent = allOrders.length;
+          applyOrderFilters();
+          renderReturnsTable(allOrders);
+          updateDashboardKpis();
+        }
+      } catch (err) {
+        console.error('Failed to fetch CRM orders:', err);
+      }
+    }
+
+    function filterOrders(status) {
+      currentStatusFilter = status;
+      document.querySelectorAll('.order-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-status') === status) {
+          btn.className = 'order-filter-btn px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold';
+        } else {
+          btn.className = 'order-filter-btn px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600';
+        }
+      });
+      applyOrderFilters();
+    }
+
+    function applyOrderFilters() {
+      const q = document.getElementById('orderSearchInput').value.toLowerCase().trim();
+      let filtered = allOrders;
+
+      if (currentStatusFilter === 'Return Requested') {
+        filtered = filtered.filter(o => o.ReturnStatus && o.ReturnStatus !== '' && o.ReturnStatus !== 'Cancelled');
+      } else if (currentStatusFilter !== 'All') {
+        filtered = filtered.filter(o => o.OrderStatus.toLowerCase() === currentStatusFilter.toLowerCase());
+      }
+
+      if (q) {
+        filtered = filtered.filter(o =>
+          (o.OrderID && o.OrderID.toLowerCase().includes(q)) ||
+          (o.CustomerName && o.CustomerName.toLowerCase().includes(q)) ||
+          (o.Phone && o.Phone.includes(q)) ||
+          (o.TrackingNumber && o.TrackingNumber.toLowerCase().includes(q))
+        );
+      }
+
+      renderOrdersTable(filtered);
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById('crmOrdersTableBody');
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-10 text-slate-500">
+              <i class="fa-solid fa-inbox text-3xl mb-2 block text-slate-600"></i>
+              No orders found matching the filter.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = orders.map(order => {
+        const nextStatus = getNextStatus(order.OrderStatus);
+        const isCompleted = order.OrderStatus === 'Delivered';
+        const hasReturn = order.ReturnStatus && order.ReturnStatus !== '' && order.ReturnStatus !== 'Cancelled';
+
+        return `
+          <tr class="hover:bg-slate-800/50 transition-colors">
+            <!-- Order ID & Date -->
+            <td class="py-3 px-4">
+              <div class="font-black text-blue-400 font-mono">${order.OrderID}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${order.CreatedAt}</div>
+              <div class="text-[10px] text-slate-500 font-mono mt-0.5">Trk: ${order.TrackingNumber}</div>
+            </td>
+
+            <!-- Customer Details -->
+            <td class="py-3 px-4">
+              <div class="font-bold text-white flex items-center space-x-1">
+                <span>${order.CustomerName}</span>
+                ${order.Phone === '6361222162' ? '<span class="bg-amber-400/20 text-amber-300 text-[9px] px-1 rounded font-bold">Target Test</span>' : ''}
+              </div>
+              <div class="text-[11px] text-slate-400 flex items-center space-x-1 mt-0.5">
+                <i class="fa-solid fa-phone text-[9px]"></i>
+                <span class="font-mono">${order.Phone}</span>
+              </div>
+              <div class="text-[10px] text-slate-500 truncate max-w-xs mt-0.5" title="${order.Address}, ${order.City}">
+                ${order.Address}, ${order.City}
+              </div>
+            </td>
+
+            <!-- Ordered Items -->
+            <td class="py-3 px-4">
+              <div class="space-y-1">
+                ${(order.Items || []).map(i => `
+                  <div class="text-[11px] text-slate-300">
+                    <span class="font-bold text-white">${i.Quantity}x</span> ${i.Title}
+                  </div>
+                `).join('')}
+              </div>
+            </td>
+
+            <!-- Amount & Payment -->
+            <td class="py-3 px-4">
+              <div class="font-black text-emerald-400 text-sm">₹${Number(order.TotalAmount).toLocaleString('en-IN')}</div>
+              <span class="text-[10px] font-semibold text-slate-400 block">${order.PaymentMethod}</span>
+              <span class="text-[9px] bg-emerald-950 text-emerald-400 px-1 py-0.2 rounded border border-emerald-800 font-bold uppercase">${order.PaymentStatus}</span>
+            </td>
+
+            <!-- Current Status -->
+            <td class="py-3 px-4">
+              <div class="space-y-1">
+                <span class="inline-block text-[11px] font-black px-2.5 py-1 rounded-full uppercase status-badge-${order.OrderStatus}">
+                  ${order.OrderStatus}
+                </span>
+                ${hasReturn ? `
+                  <div class="mt-1">
+                    <span class="inline-flex items-center text-[9px] font-bold px-2 py-0.5 rounded-full uppercase bg-purple-900/80 text-purple-200 border border-purple-600">
+                      <i class="fa-solid fa-rotate-left mr-1 text-[8px]"></i>
+                      ${order.ReturnStatus}
+                    </span>
+                    <div class="text-[10px] text-amber-300 truncate max-w-[130px] mt-0.5" title="${order.ReturnReason || ''}">${order.ReturnReason || ''}</div>
+                  </div>
+                ` : ''}
+              </div>
+            </td>
+
+            <!-- Fulfillment Advancement -->
+            <td class="py-3 px-4 text-center">
+              ${hasReturn ? `
+                <div class="space-y-1 max-w-[170px] mx-auto">
+                  ${order.ReturnStatus === 'Return Requested' ? `
+                    <button onclick="updateReturnFulfillment('${order.OrderID}', 'Pickup Scheduled')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 rounded text-xs shadow flex items-center justify-center space-x-1">
+                      <i class="fa-solid fa-truck text-[10px]"></i>
+                      <span>Schedule Pickup</span>
+                    </button>
+                  ` : ''}
+                  ${order.ReturnStatus === 'Pickup Scheduled' ? `
+                    <button onclick="updateReturnFulfillment('${order.OrderID}', 'Refund Processed')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-1 rounded text-xs shadow flex items-center justify-center space-x-1">
+                      <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                      <span>Refund &amp; Restock</span>
+                    </button>
+                  ` : ''}
+                  ${order.ReturnStatus === 'Refund Processed' ? `
+                    <span class="text-emerald-400 font-bold text-xs flex items-center justify-center space-x-1">
+                      <i class="fa-solid fa-circle-check"></i>
+                      <span>Refunded &bull; Restocked</span>
+                    </span>
+                  ` : `
+                    <button onclick="switchTab('returns')" class="text-purple-400 hover:underline text-[10px] block mx-auto">
+                      View in Returns Center &rarr;
+                    </button>
+                  `}
+                  <button onclick="openChatForOrder('${order.OrderID}', '${order.Phone}', '${encodeURIComponent(order.CustomerName)}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 rounded text-[11px] shadow flex items-center justify-center space-x-1 transition" title="Speak or chat with customer regarding return/replacement">
+                    <i class="fa-solid fa-headset text-[10px]"></i>
+                    <span>Chat / Speak</span>
+                  </button>
+                </div>
+              ` : isCompleted ? `
+                <div class="space-y-1 max-w-[170px] mx-auto">
+                  <span class="text-emerald-400 font-bold text-xs flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Completed</span>
+                  </span>
+                  <button onclick="openChatForOrder('${order.OrderID}', '${order.Phone}', '${encodeURIComponent(order.CustomerName)}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 rounded text-[11px] shadow flex items-center justify-center space-x-1 transition" title="Speak or chat with customer regarding order">
+                    <i class="fa-solid fa-headset text-[10px]"></i>
+                    <span>Chat / Speak</span>
+                  </button>
+                  <button onclick="switchTab('returns')" class="text-purple-400 hover:underline text-[10px] block mx-auto">
+                    + Initiate Return
+                  </button>
+                </div>
+              ` : `
+                <div class="space-y-1.5 max-w-[190px] mx-auto">
+                  <div class="flex items-center justify-center space-x-1.5">
+                    <button onclick="advanceOrderStatus('${order.OrderID}', '${nextStatus}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1 rounded text-xs transition flex items-center space-x-1 shadow">
+                      <span>Advance to ${nextStatus}</span>
+                      <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                    <select onchange="updateDirectStatus('${order.OrderID}', this.value)" class="bg-slate-900 text-slate-300 border border-slate-700 text-xs rounded p-1 outline-none">
+                      <option value="">Set to...</option>
+                      <option value="Pending">Pending</option>
+                      <option value="Packed">Packed</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                    </select>
+                  </div>
+                  <button onclick="openChatForOrder('${order.OrderID}', '${order.Phone}', '${encodeURIComponent(order.CustomerName)}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2 py-1 rounded text-[11px] shadow flex items-center justify-center space-x-1 transition" title="Speak or chat with customer regarding order">
+                    <i class="fa-solid fa-headset text-[10px]"></i>
+                    <span>Chat / Speak with Customer</span>
+                  </button>
+                </div>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function getNextStatus(curr) {
+      if (curr === 'Pending') return 'Packed';
+      if (curr === 'Packed') return 'Shipped';
+      if (curr === 'Shipped') return 'Delivered';
+      return 'Delivered';
+    }
+
+    async function advanceOrderStatus(orderId, newStatus) {
+      await updateDirectStatus(orderId, newStatus);
+    }
+
+    async function updateDirectStatus(orderId, newStatus) {
+      if (!newStatus) return;
+      try {
+        const res = await fetch(`/api/orders/${orderId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`Order ${orderId} updated to ${newStatus} in Google Sheets DB`, 'success');
+          fetchCrmOrders();
+        } else {
+          showNotification(data.error || 'Failed to update order', 'error');
+        }
+      } catch (err) {
+        showNotification('Update error: ' + err.message, 'error');
+      }
+    }
+
+    // RETURNS MANAGEMENT LOGIC
+    function renderReturnsTable(orders) {
+      const returns = orders.filter(o => o.ReturnStatus && o.ReturnStatus !== '' && o.ReturnStatus !== 'Cancelled');
+      document.getElementById('kpiReturns').textContent = returns.length;
+      document.getElementById('tabReturnCountBadge').textContent = returns.length;
+
+      const tbody = document.getElementById('crmReturnsTableBody');
+      if (returns.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-12 text-slate-500">
+              <i class="fa-solid fa-rotate-left text-3xl mb-2 block text-slate-600"></i>
+              No active return or replacement requests from customers.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = returns.map(order => {
+        const isRefunded = order.ReturnStatus === 'Refund Processed' || order.ReturnStatus === 'Refunded & Closed';
+        const isRejected = order.ReturnStatus === 'Return Rejected';
+
+        return `
+          <tr class="hover:bg-slate-800/50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-black text-blue-400 font-mono">${order.OrderID}</div>
+              <div class="font-bold text-white mt-0.5">${order.CustomerName}</div>
+              <div class="text-[10px] text-slate-400 font-mono">+91-${order.Phone}</div>
+              <div class="text-[10px] text-slate-500 truncate max-w-xs">${order.Address}, ${order.City}</div>
+            </td>
+            <td class="py-3 px-4 max-w-xs">
+              <div class="font-bold text-amber-300 text-xs">${order.ReturnReason || 'Defective / Damaged item'}</div>
+              ${order.ReturnComments ? `<div class="text-[11px] text-slate-300 italic mt-0.5 bg-slate-900/60 p-1.5 rounded">"${order.ReturnComments}"</div>` : ''}
+              <div class="text-[10px] text-slate-500 mt-1">Requested: ${order.ReturnRequestedAt || order.UpdatedAt}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="font-semibold text-slate-200 bg-slate-900 px-2 py-1 rounded text-[11px] border border-slate-700">
+                ${order.ReturnType || 'Refund to UPI/Account'}
+              </span>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-black text-emerald-400 text-sm">₹${Number(order.RefundAmount || order.TotalAmount).toLocaleString('en-IN')}</div>
+              <span class="text-[10px] text-slate-400">${order.PaymentMethod}</span>
+            </td>
+            <td class="py-3 px-4">
+              <span class="inline-block text-[10px] font-black px-2.5 py-1 rounded-full uppercase ${
+                order.ReturnStatus === 'Return Requested'
+                  ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                  : order.ReturnStatus === 'Pickup Scheduled'
+                  ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                  : isRefunded
+                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                  : isRejected
+                  ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                  : 'bg-purple-950 text-purple-300 border border-purple-800'
+              }">
+                ${order.ReturnStatus}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${isRefunded ? `
+                <div class="text-emerald-400 font-bold text-xs flex items-center justify-center space-x-1">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>Refunded &bull; Restocked</span>
+                </div>
+              ` : isRejected ? `
+                <span class="text-rose-400 font-bold text-xs">Return Rejected</span>
+              ` : `
+                <div class="flex flex-col space-y-1.5 max-w-[200px] mx-auto">
+                  ${order.ReturnStatus === 'Return Requested' ? `
+                    <button onclick="updateReturnFulfillment('${order.OrderID}', 'Pickup Scheduled')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2.5 py-1 rounded text-xs transition shadow flex items-center justify-center space-x-1">
+                      <i class="fa-solid fa-truck text-[10px]"></i>
+                      <span>Schedule Courier Pickup</span>
+                    </button>
+                  ` : ''}
+                  ${(order.ReturnStatus === 'Return Requested' || order.ReturnStatus === 'Pickup Scheduled') ? `
+                    <button onclick="updateReturnFulfillment('${order.OrderID}', 'Refund Processed')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2.5 py-1 rounded text-xs transition shadow flex items-center justify-center space-x-1">
+                      <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                      <span>Process Refund &amp; Restock</span>
+                    </button>
+                  ` : ''}
+                  <button onclick="openChatForOrder('${order.OrderID}', '${order.Phone}', '${encodeURIComponent(order.CustomerName)}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1 rounded text-xs transition shadow flex items-center justify-center space-x-1" title="Speak or chat with customer regarding return">
+                    <i class="fa-solid fa-headset text-[10px]"></i>
+                    <span>Chat / Speak with Customer</span>
+                  </button>
+                  <button onclick="updateReturnFulfillment('${order.OrderID}', 'Return Rejected')" class="bg-slate-700 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 px-2 py-0.5 rounded text-[10px]">
+                    Reject Return
+                  </button>
+                </div>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function updateReturnFulfillment(orderId, status) {
+      try {
+        const res = await fetch(`/api/orders/${orderId}/return-status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, restock: true })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`Order ${orderId} return status updated to ${status}! Google Sheets updated.`, 'success');
+          fetchCrmOrders();
+          fetchInventory();
+        } else {
+          showNotification(data.error || 'Failed to update return', 'error');
+        }
+      } catch (err) {
+        showNotification('Return update error: ' + err.message, 'error');
+      }
+    }
+
+    // 2. INVENTORY MANAGEMENT LOGIC
+    async function fetchInventory() {
+      try {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        if (data.success) {
+          renderInventoryTable(data.products);
+          updateDashboardKpis();
+        }
+      } catch (err) {
+        console.error('Failed to fetch inventory:', err);
+      }
+    }
+
+    function renderInventoryTable(products) {
+      const tbody = document.getElementById('crmInventoryTableBody');
+      tbody.innerHTML = products.map(p => {
+        const stock = Number(p.Stock);
+        const isLow = stock <= 8;
+        const isOut = stock === 0;
+
+        return `
+          <tr class="hover:bg-slate-800/50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="flex items-center space-x-3">
+                <img src="${p.ImageUrl}" alt="${p.Title}" class="w-10 h-10 object-contain bg-white rounded p-1 border border-slate-700 shrink-0">
+                <div>
+                  <span class="font-mono text-[10px] text-blue-400 font-bold">${p.ProductID}</span>
+                  <div class="font-bold text-white line-clamp-1 max-w-sm">${p.Title}</div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-4 text-slate-300 font-semibold">${p.Category}</td>
+            <td class="py-3 px-4 font-black text-white">₹${Number(p.Price).toLocaleString('en-IN')}</td>
+            <td class="py-3 px-4">
+              <input type="number" id="stockInput-${p.ProductID}" value="${stock}" min="0" class="w-20 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center font-bold text-white text-xs outline-none focus:border-blue-500">
+            </td>
+            <td class="py-3 px-4">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isOut ? 'bg-rose-950 text-rose-400 border border-rose-800' : (isLow ? 'bg-amber-950 text-amber-400 border border-amber-800' : 'bg-emerald-950 text-emerald-400 border border-emerald-800')}">
+                ${isOut ? 'OUT OF STOCK' : (isLow ? 'LOW STOCK ALERT' : 'OPTIMAL')}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="saveStockLevel('${p.ProductID}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded text-xs shadow transition">
+                <i class="fa-solid fa-floppy-disk mr-1"></i> Save Stock
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function saveStockLevel(productId) {
+      const input = document.getElementById(`stockInput-${productId}`);
+      const newStock = parseInt(input.value, 10);
+      if (isNaN(newStock) || newStock < 0) {
+        showNotification('Please enter a valid stock integer', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/products/${productId}/stock`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stock: newStock })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`Product ${productId} stock updated to ${newStock} in Sheets!`, 'success');
+          fetchInventory();
+        }
+      } catch (err) {
+        showNotification('Failed to update stock', 'error');
+      }
+    }
+
+    function openNewProductModal() {
+      document.getElementById('newProductModal').classList.remove('hidden');
+    }
+
+    function closeNewProductModal() {
+      document.getElementById('newProductModal').classList.add('hidden');
+    }
+
+    async function submitNewProduct() {
+      const title = document.getElementById('npTitle').value.trim();
+      const price = document.getElementById('npPrice').value;
+      const mrp = document.getElementById('npMRP').value;
+      const stock = document.getElementById('npStock').value;
+      const category = document.getElementById('npCategory').value;
+      const imageUrl = document.getElementById('npImageUrl').value.trim();
+      const description = document.getElementById('npDescription').value.trim();
+
+      if (!title || !price) {
+        showNotification('Title and Price are required', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            Title: title,
+            Category: category,
+            Price: Number(price),
+            MRP: Number(mrp) || Number(price),
+            Stock: Number(stock) || 10,
+            ImageUrl: imageUrl,
+            Description: description
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeNewProductModal();
+          showNotification('New product added to Google Sheets catalog!', 'success');
+          fetchInventory();
+        }
+      } catch (err) {
+        showNotification('Failed to create product', 'error');
+      }
+    }
+
+    // 3. CUSTOMER DIRECTORY LOGIC
+    async function fetchCustomers() {
+      try {
+        const res = await fetch('/api/customers');
+        const data = await res.json();
+        if (data.success) {
+          renderCustomersTable(data.customers);
+        }
+      } catch (err) {
+        console.error('Failed to fetch customers:', err);
+      }
+    }
+
+    function renderCustomersTable(customers) {
+      const tbody = document.getElementById('crmCustomersTableBody');
+      tbody.innerHTML = customers.map(c => `
+        <tr class="hover:bg-slate-800/50 transition-colors">
+          <td class="py-3 px-4">
+            <span class="font-mono text-xs font-bold text-white flex items-center space-x-1.5">
+              <span>+91-${c.Phone}</span>
+              ${c.Phone === '6361222162' ? '<span class="bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.2 rounded">Target</span>' : ''}
+            </span>
+          </td>
+          <td class="py-3 px-4 font-bold text-white">${c.Name || 'Customer'}</td>
+          <td class="py-3 px-4 text-slate-300">
+            <div>${c.Address || 'N/A'}</div>
+            <div class="text-[10px] text-slate-500">${c.City || ''} ${c.Pincode || ''}</div>
+          </td>
+          <td class="py-3 px-4 font-mono font-bold text-blue-400">${c.orderCount || 0} orders</td>
+          <td class="py-3 px-4 font-black text-emerald-400">₹${Number(c.totalSpent || 0).toLocaleString('en-IN')}</td>
+          <td class="py-3 px-4 text-slate-500 text-[10px]">${c.LastLoginAt || c.RegisteredAt || 'Active'}</td>
+        </tr>
+      `).join('');
+    }
+
+    // 4. GOOGLE SHEETS STATS & CSV INSPECTION
+    async function fetchSheetsStats() {
+      try {
+        const res = await fetch('/api/sheets/stats');
+        const data = await res.json();
+        if (data.success) {
+          const m = data.metrics;
+          document.getElementById('sheetUsersCount').textContent = `${m.totalUsers} Records`;
+          document.getElementById('sheetProductsCount').textContent = `${m.totalProducts} Items`;
+          document.getElementById('sheetOrdersCount').textContent = `${m.totalOrders} Orders`;
+          document.getElementById('sheetCartCount').textContent = `${m.activeCartItems} Baskets`;
+          updateDashboardKpis(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch sheets stats:', err);
+      }
+    }
+
+    async function viewRawCsv(sheetName) {
+      try {
+        const res = await fetch(`/api/sheets/raw/${sheetName}`);
+        const text = await res.text();
+        rawCsvCache = text;
+        document.getElementById('rawCsvTitle').textContent = `Google Sheets Tab: ${sheetName.toUpperCase()} (CSV Persistence)`;
+        document.getElementById('rawCsvOutput').textContent = text;
+      } catch (err) {
+        document.getElementById('rawCsvOutput').textContent = 'Failed to load CSV from server.';
+      }
+    }
+
+    function copyRawCsv() {
+      if (!rawCsvCache) return;
+      navigator.clipboard.writeText(rawCsvCache);
+      showNotification('CSV text copied to clipboard!', 'info');
+    }
+
+    function updateDashboardKpis(statsData) {
+      const revenue = allOrders
+        .filter(o => o.OrderStatus !== 'Cancelled')
+        .reduce((sum, o) => sum + (Number(o.TotalAmount) || 0), 0);
+      const pending = allOrders.filter(o => o.OrderStatus === 'Pending').length;
+
+      document.getElementById('kpiRevenue').textContent = `₹${revenue.toLocaleString('en-IN')}`;
+      document.getElementById('kpiPendingOrders').textContent = pending;
+
+      if (statsData && statsData.metrics) {
+        document.getElementById('kpiLowStock').textContent = statsData.metrics.lowStockItems;
+      }
+    }
+
+    // ==========================================
+    // AI AGENT (HEXA) CONTROL ROOM
+    // ==========================================
+    let agentDecisionsCache = [];
+
+    function agentTypeStyle(type) {
+      const map = {
+        reply_ticket:    ['bg-blue-900/50 text-blue-300', 'fa-reply', 'Reply'],
+        resolve_ticket:  ['bg-emerald-900/50 text-emerald-300', 'fa-circle-check', 'Resolve'],
+        escalate_ticket: ['bg-amber-900/50 text-amber-300', 'fa-triangle-exclamation', 'Escalate'],
+        advance_return:  ['bg-purple-900/50 text-purple-300', 'fa-rotate-left', 'Advance Return'],
+        open_return:     ['bg-indigo-900/50 text-indigo-300', 'fa-box-open', 'Open Return'],
+        flag_stock:      ['bg-rose-900/50 text-rose-300', 'fa-boxes-stacked', 'Stock Alert']
+      };
+      return map[type] || ['bg-slate-800 text-slate-300', 'fa-gear', type];
+    }
+
+    async function fetchAgentStatus() {
+      try {
+        const res = await fetch('/api/agent');
+        const data = await res.json();
+        if (!data.success) throw new Error('agent offline');
+        document.getElementById('agentStatusPill').textContent = 'ONLINE';
+        document.getElementById('agentStatusPill').className =
+          'bg-emerald-900/70 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full font-bold';
+        document.getElementById('agentScope').textContent =
+          `${data.agent.role} · v${data.agent.version}`;
+        const c = data.observed || {};
+        document.getElementById('agentKpiOrders').textContent      = c.orders ?? '—';
+        document.getElementById('agentKpiOpenTickets').textContent = c.openTickets ?? '—';
+        document.getElementById('agentKpiReturns').textContent     = c.returnsInFlight ?? '—';
+        document.getElementById('agentKpiLowStock').textContent    = c.lowStock ?? '—';
+        document.getElementById('agentKpiProducts').textContent    = c.products ?? '—';
+      } catch (err) {
+        document.getElementById('agentStatusPill').textContent = 'OFFLINE';
+        document.getElementById('agentStatusPill').className =
+          'bg-rose-900/70 text-rose-300 text-[10px] px-2 py-0.5 rounded-full font-bold';
+        console.error('Agent status failed:', err);
+      }
+    }
+
+    function renderAgentDecisions(decisions, meta) {
+      agentDecisionsCache = decisions || [];
+      const box = document.getElementById('agentDecisions');
+      document.getElementById('agentPlanMeta').textContent = meta || '';
+      if (!agentDecisionsCache.length) {
+        box.innerHTML = '<p class="text-slate-500 text-xs p-4">Nothing to do — queue is clear.</p>';
+        return;
+      }
+      box.innerHTML = agentDecisionsCache.map((d) => {
+        const [cls, icon, label] = agentTypeStyle(d.type);
+        const gate = d.auto
+          ? '<span class="text-emerald-400 text-[10px] font-bold">AUTO</span>'
+          : '<span class="text-amber-400 text-[10px] font-bold">HUMAN GATE</span>';
+        const ref = d.ticketId || d.orderId || d.productId || '';
+        return `
+          <div class="p-4 hover:bg-slate-700/30 transition">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start space-x-3 min-w-0">
+                <span class="${cls} text-[10px] font-black px-2 py-1 rounded shrink-0">
+                  <i class="fa-solid ${icon} mr-1"></i>${label}
+                </span>
+                <div class="min-w-0">
+                  <p class="text-slate-200 text-xs font-bold">
+                    ${ref ? `<span class="text-slate-400">${ref}</span> · ` : ''}${d.reason}
+                  </p>
+                  ${d.message ? `<p class="text-slate-400 text-[11px] mt-1 italic">"${d.message}"</p>` : ''}
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                ${gate}
+                ${d.priority ? `<p class="text-slate-500 text-[10px] mt-1">${d.priority}</p>` : ''}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function fetchAgentPlan() {
+      try {
+        const res = await fetch('/api/agent/plan');
+        const data = await res.json();
+        renderAgentDecisions(data.decisions, `${(data.decisions || []).length} pending decision(s)`);
+      } catch (err) {
+        console.error('Agent plan failed:', err);
+      }
+    }
+
+    async function runAgentPlan() {
+      await fetchAgentPlan();
+      showNotification('Agent preview refreshed — nothing was changed.', 'info');
+    }
+
+    async function runAgentNow() {
+      const btn = document.getElementById('agentRunBtn');
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Running…';
+      try {
+        const res = await fetch('/api/agent/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'run failed');
+        const s = data.summary || {};
+        showNotification(
+          `Hexa ran: ${s.actionsApplied} action(s) applied, ${s.replies} repl(y/ies), ` +
+          `${s.resolved} resolved, ${s.stockAlerts} stock alert(s).`,
+          'info'
+        );
+        renderAgentDecisions(data.decisions, `${s.decisions} decision(s) · ${s.actionsApplied} applied`);
+        document.getElementById('agentKpiActions').textContent = s.actionsApplied ?? '—';
+        await fetchAgentStatus();
+        await fetchAgentLog();
+        fetchCrmOrders();
+        fetchSupportTickets();
+      } catch (err) {
+        showNotification('Agent run failed: ' + err.message, 'error');
+        console.error('Agent run failed:', err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+      }
+    }
+
+    async function fetchAgentLog() {
+      try {
+        const res = await fetch('/api/agent/log?limit=30');
+        const data = await res.json();
+        const box = document.getElementById('agentLog');
+        const log = (data.log || []).slice().reverse();
+        document.getElementById('agentKpiActions').textContent = log.length ? log.length : '0';
+        if (!log.length) {
+          box.innerHTML = '<p class="text-slate-500 text-xs p-4">No actions recorded yet. Hit "Run Agent Now".</p>';
+          return;
+        }
+        box.innerHTML = log.map(e => {
+          const [cls, icon, label] = agentTypeStyle(e.type);
+          const ref = e.ticketId || e.orderId || e.productId || '';
+          const applied = e.applied
+            ? '<span class="text-emerald-400 text-[10px] font-bold">APPLIED</span>'
+            : '<span class="text-slate-500 text-[10px] font-bold">' + (e.dryRun ? 'DRY RUN' : 'LOGGED') + '</span>';
+          return `
+            <div class="p-3 flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-slate-300 text-[11px]">
+                  <span class="text-slate-500 font-mono">${e.at}</span>
+                  <span class="${cls} text-[10px] font-black px-1.5 py-0.5 rounded ml-2">
+                    <i class="fa-solid ${icon} mr-1"></i>${label}
+                  </span>
+                  ${ref ? `<span class="text-slate-400 ml-2">${ref}</span>` : ''}
+                </p>
+                <p class="text-slate-500 text-[11px] mt-1">${e.reason}</p>
+              </div>
+              <div class="text-right shrink-0">${applied}</div>
+            </div>`;
+        }).join('');
+      } catch (err) {
+        console.error('Agent log failed:', err);
+      }
+    }
+
+    // ==========================================
+    // SUPPORT DESK & LIVE CHAT ENGINE
+    // ==========================================
+    function initCrmSupportWebSocket() {
+      try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        crmWs = new WebSocket(wsUrl);
+
+        crmWs.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'agent:run' || data.type === 'agent:action') {
+              fetchAgentStatus();
+              fetchAgentPlan();
+              fetchAgentLog();
+            }
+            if (data.type === 'chat:message' || data.type === 'ticket:created' || data.type === 'ticket:status') {
+              fetchSupportTickets();
+              if (data.type === 'chat:message' && data.message && data.message.sender === 'customer') {
+                showNotification(`New message from Customer (${data.message.senderName}): "${data.message.text.substring(0, 40)}..."`, 'info');
+              } else if (data.type === 'callback:requested') {
+                showNotification(`📞 URGENT: Callback requested by ${data.name} (+91-${data.phone})`, 'error');
+              }
+            }
+          } catch (e) {}
+        };
+
+        crmWs.onclose = () => {
+          setTimeout(initCrmSupportWebSocket, 5000);
+        };
+      } catch (err) {}
+    }
+
+    async function fetchSupportTickets() {
+      try {
+        const res = await fetch('/api/support/tickets');
+        const data = await res.json();
+        if (data.success) {
+          supportTickets = data.tickets || [];
+          const activeCount = supportTickets.filter(t => t.Status !== 'Resolved').length;
+          const badge = document.getElementById('tabSupportCountBadge');
+          if (badge) badge.textContent = activeCount;
+          const kpi = document.getElementById('kpiSupport');
+          if (kpi) kpi.textContent = `${activeCount} Active`;
+
+          if (selectedSupportTicket) {
+            const updated = supportTickets.find(t => t.TicketID === selectedSupportTicket.TicketID);
+            if (updated) {
+              selectedSupportTicket = updated;
+            }
+          } else if (supportTickets.length > 0) {
+            selectedSupportTicket = supportTickets[0];
+          }
+
+          renderSupportTicketsList();
+          if (selectedSupportTicket) {
+            renderSupportConversation(selectedSupportTicket);
+          } else {
+            renderEmptyConversation();
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching support tickets:', err);
+      }
+    }
+
+    function renderSupportTicketsList() {
+      const container = document.getElementById('supportTicketsList');
+      if (!container) return;
+
+      const q = (document.getElementById('supportSearchInput')?.value || '').toLowerCase().trim();
+      const filtered = supportTickets.filter(t => {
+        if (currentSupportFilter !== 'All' && t.Status !== currentSupportFilter) return false;
+        if (q) {
+          return t.TicketID.toLowerCase().includes(q) ||
+                 t.CustomerPhone.includes(q) ||
+                 (t.OrderID && t.OrderID.toLowerCase().includes(q)) ||
+                 t.CustomerName.toLowerCase().includes(q) ||
+                 t.Subject.toLowerCase().includes(q);
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-500 text-xs">
+            <i class="fa-solid fa-inbox text-2xl mb-2 text-slate-600 block"></i>
+            <span>No tickets match filter.</span>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(t => {
+        const isSelected = selectedSupportTicket?.TicketID === t.TicketID;
+        return `
+          <div onclick="selectSupportTicket('${t.TicketID}')" class="p-3 rounded-lg cursor-pointer transition text-xs ${
+            isSelected
+              ? 'bg-indigo-950/80 border border-indigo-500/80 text-white'
+              : 'hover:bg-slate-700/50 text-slate-300 border border-transparent'
+          }">
+            <div class="flex items-center justify-between">
+              <span class="font-mono font-bold text-indigo-400 text-[11px]">${t.TicketID}</span>
+              <div class="flex items-center space-x-1.5">
+                ${t.OrderID ? `<span class="bg-blue-900/60 text-blue-300 text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">${t.OrderID}</span>` : ''}
+                <span class="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded ${
+                  t.Status === 'Open'
+                    ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                    : t.Status === 'In Progress'
+                    ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                    : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                }">${t.Status}</span>
+              </div>
+            </div>
+            <div class="font-bold text-white mt-1 truncate">${t.Subject}</div>
+            <div class="text-[11px] text-slate-400 flex items-center justify-between mt-1">
+              <span>${t.CustomerName} (+91-${t.CustomerPhone})</span>
+              <span class="text-[10px] text-slate-500 font-mono">${t.UpdatedAt ? (t.UpdatedAt.split(' ')[1] || t.UpdatedAt) : ''}</span>
+            </div>
+            <div class="text-[11px] text-slate-400 truncate mt-1 bg-slate-900/70 p-1.5 rounded italic">
+              ${t.LastMessage || 'No messages yet'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectSupportTicket(ticketId) {
+      const ticket = supportTickets.find(t => t.TicketID === ticketId);
+      if (ticket) {
+        selectedSupportTicket = ticket;
+        renderSupportTicketsList();
+        renderSupportConversation(ticket);
+      }
+    }
+
+    function renderSupportConversation(ticket) {
+      const panel = document.getElementById('supportConversationPanel');
+      if (!panel) return;
+
+      const linkedOrder = ticket.OrderID ? allOrders.find(o => o.OrderID === ticket.OrderID) : null;
+
+      panel.innerHTML = `
+        <!-- Conversation Header -->
+        <div class="p-4 border-b border-slate-700 bg-slate-900 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-sm">
+              ${ticket.CustomerName ? ticket.CustomerName.charAt(0) : 'C'}
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h3 class="font-bold text-white text-sm">${ticket.CustomerName}</h3>
+                <span class="text-xs text-slate-400 font-mono">+91-${ticket.CustomerPhone}</span>
+                ${ticket.CustomerPhone === '6361222162' ? `<span class="bg-amber-400/20 text-amber-300 text-[9px] px-1.5 py-0.2 rounded font-bold border border-amber-400/30">Target Demo Customer</span>` : ''}
+              </div>
+              <div class="text-xs text-slate-400 mt-0.5 flex items-center space-x-2">
+                <span>Ticket: <strong class="font-mono text-indigo-300">${ticket.TicketID}</strong></span>
+                <span>&bull;</span>
+                <span class="text-slate-300">${ticket.Subject}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <!-- Call Customer Link -->
+            <a href="tel:+91${ticket.CustomerPhone}" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow flex items-center space-x-1.5 transition">
+              <i class="fa-solid fa-phone"></i>
+              <span>Call +91-${ticket.CustomerPhone}</span>
+            </a>
+
+            <!-- Status Selector -->
+            <select onchange="updateSupportTicketStatus(this.value)" class="bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-lg p-1.5 outline-none font-bold">
+              <option value="Open" ${ticket.Status === 'Open' ? 'selected' : ''}>Status: Open</option>
+              <option value="In Progress" ${ticket.Status === 'In Progress' ? 'selected' : ''}>Status: In Progress</option>
+              <option value="Resolved" ${ticket.Status === 'Resolved' ? 'selected' : ''}>Status: Resolved</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Attached Order Card Context Strip -->
+        ${linkedOrder ? `
+          <div class="bg-slate-950/80 px-4 py-2.5 border-b border-slate-700/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center space-x-3">
+              <span class="text-slate-400 font-bold uppercase text-[10px]">Attached Order:</span>
+              <span class="font-mono font-bold text-blue-400">#${linkedOrder.OrderID}</span>
+              <span class="text-slate-300 font-black">₹${Number(linkedOrder.TotalAmount).toLocaleString('en-IN')}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase status-badge-${linkedOrder.OrderStatus}">${linkedOrder.OrderStatus}</span>
+              ${linkedOrder.ReturnStatus ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-purple-900 text-purple-200 border border-purple-700">Return: ${linkedOrder.ReturnStatus}</span>` : ''}
+            </div>
+
+            <!-- Quick 1-Click Order Action Shortcuts in Chat -->
+            <div class="flex items-center space-x-2">
+              ${linkedOrder.ReturnStatus === 'Return Requested' ? `
+                <button onclick="updateReturnFulfillment('${linkedOrder.OrderID}', 'Pickup Scheduled')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-2 py-1 rounded text-[11px] shadow flex items-center space-x-1">
+                  <i class="fa-solid fa-truck text-[10px]"></i>
+                  <span>Schedule Pickup</span>
+                </button>
+              ` : ''}
+              ${(linkedOrder.ReturnStatus === 'Return Requested' || linkedOrder.ReturnStatus === 'Pickup Scheduled') ? `
+                <button onclick="updateReturnFulfillment('${linkedOrder.OrderID}', 'Refund Processed')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-1 rounded text-[11px] shadow flex items-center space-x-1">
+                  <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                  <span>Instant Refund &amp; Restock</span>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Messages Area -->
+        <div id="supportMessagesContainer" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-900/40 min-h-[340px] max-h-[380px]">
+          ${(ticket.Messages || []).map(msg => {
+            const isSupport = msg.sender === 'support';
+            return `
+              <div class="flex flex-col ${isSupport ? 'items-end' : 'items-start'}">
+                <div class="flex items-center space-x-1.5 text-[10px] text-slate-400 mb-1">
+                  <span class="font-bold text-slate-300">${msg.senderName}</span>
+                  <span>&bull;</span>
+                  <span>${msg.timestamp}</span>
+                </div>
+                <div class="max-w-lg p-3 rounded-2xl text-xs shadow ${
+                  isSupport
+                    ? 'bg-indigo-600 text-white rounded-br-none'
+                    : 'bg-slate-700 text-slate-100 rounded-bl-none border border-slate-600'
+                }">
+                  ${msg.text}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <!-- Executive Canned Responses Chips -->
+        <div class="p-2.5 bg-slate-900/80 border-t border-slate-700/80 flex items-center space-x-1.5 overflow-x-auto text-xs scrollbar-none">
+          <span class="text-[10px] uppercase font-bold text-slate-400 shrink-0">Quick Answers:</span>
+          <button onclick="sendSupportMessage('Hello Vishnu, your doorstep courier pickup has been scheduled with BlueDart for tomorrow 11:00 AM.')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded text-[11px] shrink-0 border border-slate-700">
+            🚚 Pickup Scheduled
+          </button>
+          <button onclick="sendSupportMessage('We have processed your full refund to your original UPI account. Google Sheets DB restocked.')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded text-[11px] shrink-0 border border-slate-700">
+            💵 Refund Processed
+          </button>
+          <button onclick="sendSupportMessage('A brand-new replacement unit has been dispatched under express courier tracking.')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded text-[11px] shrink-0 border border-slate-700">
+            🔄 Replacement Dispatched
+          </button>
+        </div>
+
+        <!-- Composer -->
+        <div class="p-3 border-t border-slate-700 bg-slate-900 flex items-center space-x-2">
+          <input type="text" id="crmSupportMsgInput" placeholder="Type support reply to customer (updates real-time)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-indigo-500" onkeydown="if(event.key === 'Enter') sendSupportMessage()">
+          <button onclick="sendSupportMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold shadow flex items-center space-x-1.5">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+            <span>Send</span>
+          </button>
+        </div>
+      `;
+
+      const msgBox = document.getElementById('supportMessagesContainer');
+      if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+    }
+
+    function renderEmptyConversation() {
+      const panel = document.getElementById('supportConversationPanel');
+      if (!panel) return;
+      panel.innerHTML = `
+        <div class="flex-1 flex flex-col items-center justify-center p-12 text-slate-500 text-xs">
+          <i class="fa-solid fa-headset text-4xl mb-3 text-slate-600"></i>
+          <h4 class="font-bold text-slate-300 text-sm">Select a Support Ticket</h4>
+          <p class="mt-1 max-w-sm text-center">Choose an active customer ticket from the left queue or click 'Chat / Speak' on any order to start a conversation.</p>
+        </div>
+      `;
+    }
+
+    async function sendSupportMessage(presetText = '') {
+      if (!selectedSupportTicket) return;
+      const input = document.getElementById('crmSupportMsgInput');
+      const text = presetText || (input ? input.value.trim() : '');
+      if (!text) return;
+
+      try {
+        const res = await fetch(`/api/support/tickets/${selectedSupportTicket.TicketID}/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text,
+            sender: 'support',
+            senderName: 'Rahul Sharma (Support Executive)',
+            orderId: selectedSupportTicket.OrderID
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (input) input.value = '';
+          fetchSupportTickets();
+          showNotification('Reply delivered to customer in real-time!', 'success');
+        }
+      } catch (err) {
+        showNotification('Error sending message: ' + err.message, 'error');
+      }
+    }
+
+    async function updateSupportTicketStatus(status) {
+      if (!selectedSupportTicket) return;
+      try {
+        const res = await fetch(`/api/support/tickets/${selectedSupportTicket.TicketID}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`Ticket status updated to ${status}!`, 'success');
+          fetchSupportTickets();
+        }
+      } catch (err) {
+        showNotification('Failed to update status', 'error');
+      }
+    }
+
+    async function openChatForOrder(orderId, phone, encodedName) {
+      const customerName = decodeURIComponent(encodedName || 'Customer');
+      switchTab('support');
+
+      let existing = supportTickets.find(t => t.OrderID === orderId);
+      if (existing) {
+        selectedSupportTicket = existing;
+        renderSupportTicketsList();
+        renderSupportConversation(existing);
+        return;
+      }
+
+      // Create new ticket for this order
+      try {
+        const res = await fetch('/api/support/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            customerPhone: phone,
+            customerName,
+            subject: `Fulfillment Support for Order ${orderId}`,
+            initialMessage: `Support Executive initiated communication regarding Order ${orderId}.`,
+            sender: 'support',
+            senderName: 'Rahul Sharma (Support Executive)'
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification(`Opened support conversation for Order ${orderId}`, 'success');
+          await fetchSupportTickets();
+          selectedSupportTicket = data.ticket;
+          renderSupportTicketsList();
+          renderSupportConversation(data.ticket);
+        }
+      } catch (err) {
+        showNotification('Failed to initiate conversation: ' + err.message, 'error');
+      }
+    }
+
+    function setSupportStatusFilter(filter) {
+      currentSupportFilter = filter;
+      document.querySelectorAll('.support-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-filter') === filter) {
+          btn.className = 'support-filter-btn flex-1 py-1 rounded text-[11px] font-bold bg-indigo-600 text-white';
+        } else {
+          btn.className = 'support-filter-btn flex-1 py-1 rounded text-[11px] font-bold bg-slate-800 text-slate-400 hover:text-white';
+        }
+      });
+      renderSupportTicketsList();
+    }
+
+    function filterSupportTickets() {
+      renderSupportTicketsList();
+    }
+
+    function openNewOutboundTicketModal() {
+      document.getElementById('newOutboundTicketModal').classList.remove('hidden');
+    }
+
+    function closeNewOutboundTicketModal() {
+      document.getElementById('newOutboundTicketModal').classList.add('hidden');
+    }
+
+    async function submitNewOutboundTicket() {
+      const phone = document.getElementById('outboundPhone').value.trim();
+      const customerName = document.getElementById('outboundCustomerName').value.trim();
+      const orderId = document.getElementById('outboundOrderId').value.trim();
+      const subject = document.getElementById('outboundSubject').value.trim();
+      const initialMessage = document.getElementById('outboundMessage').value.trim();
+
+      if (!phone || !subject || !initialMessage) {
+        showNotification('Phone, Subject and Message are required', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/support/tickets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            customerPhone: phone,
+            customerName,
+            subject,
+            initialMessage,
+            sender: 'support',
+            senderName: 'Rahul Sharma (Support Executive)'
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeNewOutboundTicketModal();
+          showNotification(`Outbound ticket created for +91-${phone}!`, 'success');
+          await fetchSupportTickets();
+          selectedSupportTicket = data.ticket;
+          renderSupportTicketsList();
+          renderSupportConversation(data.ticket);
+        } else {
+          showNotification(data.error || 'Failed to create ticket', 'error');
+        }
+      } catch (err) {
+        showNotification('Error creating ticket: ' + err.message, 'error');
+      }
+    }
+
+    // Toast
+    function showNotification(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `fixed bottom-5 right-5 z-50 flex items-center space-x-2 px-4 py-3 rounded-lg shadow-2xl text-xs font-semibold text-white border transition-all transform duration-300 ${type === 'success' ? 'bg-emerald-700 border-emerald-500' : (type === 'error' ? 'bg-rose-700 border-rose-500' : 'bg-slate-800 border-slate-600')}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle')} text-sm"></i>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

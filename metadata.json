@@ -1,0 +1,6 @@
+{
+  "name": "OmniCommerce Hub - Dual Customer & CRM Platform",
+  "description": "Production-ready dual-interface E-Commerce CRM system mimicking Amazon & Flipkart workflows with customer shopping, OTP authentication, real-time employee fulfillment, and Google Sheets persistent storage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

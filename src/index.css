@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-code: 'JetBrains Mono', monospace;
+    --bg-canvas: #f7f5fa;
+    --text-primary: #000000;
+    --text-muted: #5b5569;
+    --border-hairline: rgba(76, 29, 149, 0.1);
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.035em;
+    font-weight: 800;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-code);
+  }
+}
+
+/* Custom Editorial Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f4f4;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #000000;
+}
+
+/* Mondragon 4 Editorial Utilities */
+.mondragon-border {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.mondragon-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mondragon-card:hover {
+  border-color: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.mondragon-pill {
+  background-color: #000000;
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.link-editorial {
+  position: relative;
+  text-decoration: none;
+  font-weight: 600;
+  color: #000000;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.link-editorial::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #000000;
+  transition: transform 0.25s ease;
+  transform-origin: right;
+  transform: scaleX(1);
+}
+
+.link-editorial:hover::after {
+  transform: scaleX(0);
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

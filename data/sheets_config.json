@@ -1,0 +1,12 @@
+{
+  "sheetId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms_DEMO",
+  "serviceAccountConfigured": false,
+  "lastSyncTime": "2026-10-06T10:32:13.537Z",
+  "mode": "Sheets-CSV-Persistent-Store",
+  "sheetTabs": [
+    "Users",
+    "Products",
+    "Cart",
+    "Orders"
+  ]
+}
