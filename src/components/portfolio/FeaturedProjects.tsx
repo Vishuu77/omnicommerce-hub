@@ -166,7 +166,8 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
         }
       ],
       techStack: ['Python', 'Streamlit', 'Pandas', 'LangGraph', 'Statistical Modeling', 'MCP Connectors', 'AST Validation'],
-      githubUrl: 'https://github.com/Vishuu77/Machine-Learning-Data-Science-Projects-'
+      githubUrl: 'https://github.com/Vishuu77/Machine-Learning-Data-Science-Projects-',
+      liveActions: { datasciencePortal: true }
     },
     {
       id: 'b2b-cad-localization',
@@ -340,6 +341,20 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
                       <span>Employee CRM ↗</span>
                     </a>
                   </>
+                )}
+
+                {/* For No-Code Data Science Agent, render direct link to datascience-portal */}
+                {project.id === 'nocode-datascience-agent' && (
+                  <a
+                    href="/datascience-portal.html"
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => soundFX.playClick()}
+                    className="px-4 py-2.5 rounded-full border border-purple-500/40 hover:border-purple-600 bg-purple-50 hover:bg-purple-100 text-purple-900 text-xs font-bold transition-colors inline-flex items-center space-x-1 shadow-sm"
+                  >
+                    <BarChart3 className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Live DS Suite Preview ↗</span>
+                  </a>
                 )}
               </div>
             </div>

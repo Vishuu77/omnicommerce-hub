@@ -25,7 +25,7 @@ export const PORTFOLIO_IMAGES = {
   omnicommerceShowcase: '/assets/omnicommerce_preview.jpg',
 
   // Flagship Project 4: No-Code Data Science Engineer Agent
-  dataScienceAgentShowcase: '/assets/mondragon_hero_3d.jpg',
+  dataScienceAgentShowcase: '/assets/datascience_preview.jpg',
 
   // Flagship Project 5: B2B Engineering 3D Designs & Localization Suite (Fusion 360)
   cadShowcase: '/assets/cad_showcase.jpg'

@@ -12,7 +12,8 @@ import {
   ArrowRight,
   Code2,
   Server,
-  Database
+  Database,
+  BarChart3
 } from 'lucide-react';
 import { soundFX } from './SoundFX';
 
@@ -32,6 +33,7 @@ export interface ProjectData {
   liveActions?: {
     customerPortal?: boolean;
     crmPortal?: boolean;
+    datasciencePortal?: boolean;
     sandboxLink?: string;
   };
 }
@@ -150,6 +152,18 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                 >
                   <Boxes className="w-3.5 h-3.5" />
                   <span>Launch Back-Office CRM ↗</span>
+                </a>
+              )}
+              {project.liveActions?.datasciencePortal && (
+                <a
+                  href="/datascience-portal.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => soundFX.playSuccess()}
+                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition-all"
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>Launch Data Science Suite ↗</span>
                 </a>
               )}
               {project.liveActions?.sandboxLink && (
