@@ -250,6 +250,29 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onShowToast }) =
                   <ArrowUpRight className="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
                 </a>
 
+                {/* GitHub Channel */}
+                <a
+                  href="https://github.com/Vishuu77"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-4 rounded-xl border border-black/10 hover:border-black/40 bg-neutral-50/60 hover:bg-neutral-50 flex items-center justify-between cursor-pointer transition-all group"
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <div className="p-2.5 rounded-lg bg-black text-white">
+                      <ExternalLink className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase font-mono text-neutral-500 font-bold">
+                        GitHub Developer Hub &bull; Source Code
+                      </div>
+                      <div className="text-sm font-bold text-black font-mono group-hover:underline">
+                        github.com/Vishuu77
+                      </div>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-neutral-400 group-hover:text-black transition-colors" />
+                </a>
+
                 {/* Location Channel */}
                 <div className="p-4 rounded-xl border border-black/10 bg-neutral-50/60 flex items-center space-x-3.5">
                   <div className="p-2.5 rounded-lg bg-black text-white">

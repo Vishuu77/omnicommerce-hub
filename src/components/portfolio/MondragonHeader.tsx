@@ -78,6 +78,15 @@ export const MondragonHeader: React.FC<MondragonHeaderProps> = ({
           {/* Column 3: Socials & External (2 Cols) */}
           <div className="hidden md:flex flex-col space-y-1.5 md:col-span-2 text-xs font-semibold text-black">
             <a
+              href="https://github.com/Vishuu77"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline underline-offset-4 flex items-center gap-1"
+            >
+              <span>GitHub (@Vishuu77)</span>
+              <ArrowUpRight className="w-3 h-3 text-neutral-500" />
+            </a>
+            <a
               href="https://linkedin.com/in/vishnu-r-63095b282"
               target="_blank"
               rel="noreferrer"
@@ -102,9 +111,14 @@ export const MondragonHeader: React.FC<MondragonHeaderProps> = ({
             >
               <span>Download CV ↓</span>
             </button>
-            <span className="text-[10px] font-mono text-neutral-500 pt-1">
-              Bengaluru • Hyderabad
-            </span>
+            <a
+              href="https://github.com/Vishuu77/Vishuu77.github.io"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline underline-offset-4 flex items-center gap-1 text-[11px] font-mono text-purple-900"
+            >
+              <span>Portfolio Source ↗</span>
+            </a>
           </div>
 
           {/* Column 4: Disciplines & Services (3 Cols) */}

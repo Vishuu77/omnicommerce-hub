@@ -28,6 +28,7 @@ export interface ProjectData {
   architectureHighlights: string[];
   keyChallenges: { challenge: string; solution: string }[];
   techStack: string[];
+  githubUrl?: string;
   liveActions?: {
     customerPortal?: boolean;
     crmPortal?: boolean;
@@ -71,15 +72,30 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
               // ARCHITECTURAL CASE STUDY
             </span>
           </div>
-          <button
-            onClick={() => {
-              soundFX.playClick();
-              onClose();
-            }}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-3">
+            {project.githubUrl && (
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => soundFX.playClick()}
+                className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 text-xs font-mono font-bold transition-all"
+                title="View repository on GitHub"
+              >
+                <Code2 className="w-3.5 h-3.5" />
+                <span>GitHub Repo ↗</span>
+              </a>
+            )}
+            <button
+              onClick={() => {
+                soundFX.playClick();
+                onClose();
+              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Scrollable Body */}
@@ -95,12 +111,24 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
           </div>
 
           {/* Live Action Buttons (if applicable) */}
-          {project.liveActions && (
+          {(project.liveActions || project.githubUrl) && (
             <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-slate-900/60 border border-slate-800">
               <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider mr-2">
-                Live Interactive Instances:
+                Actions &amp; Code:
               </span>
-              {project.liveActions.customerPortal && (
+              {project.githubUrl && (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => soundFX.playClick()}
+                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-cyan-500/40 text-cyan-300 font-bold text-xs shadow-md transition-all"
+                >
+                  <Code2 className="w-3.5 h-3.5" />
+                  <span>View GitHub Repository ↗</span>
+                </a>
+              )}
+              {project.liveActions?.customerPortal && (
                 <a
                   href="/customer-portal.html"
                   target="_blank"
@@ -112,7 +140,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                   <span>Launch Customer Portal ↗</span>
                 </a>
               )}
-              {project.liveActions.crmPortal && (
+              {project.liveActions?.crmPortal && (
                 <a
                   href="/employee-crm.html"
                   target="_blank"
@@ -124,7 +152,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
                   <span>Launch Back-Office CRM ↗</span>
                 </a>
               )}
-              {project.liveActions.sandboxLink && (
+              {project.liveActions?.sandboxLink && (
                 <a
                   href={project.liveActions.sandboxLink}
                   onClick={() => {

@@ -62,7 +62,8 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
           solution: 'Engineered a sensor array using ultrasonic ground profiling, visual alignment via ESP32-CAM, and vertical travel limit switches.'
         }
       ],
-      techStack: ['Raspberry Pi Pico', 'ESP32-CAM', 'Autodesk Fusion 360', 'Johnson DC Motors', 'Ultrasonic Sensors', 'Embedded C/C++', 'Agentic Firmware']
+      techStack: ['Raspberry Pi Pico', 'ESP32-CAM', 'Autodesk Fusion 360', 'Johnson DC Motors', 'Ultrasonic Sensors', 'Embedded C/C++', 'Agentic Firmware'],
+      githubUrl: 'https://github.com/Vishuu77/RAI-'
     },
     {
       id: 'one-man-agentic-os',
@@ -95,7 +96,8 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
           solution: 'Built a standardized MCP connector layer and unattended cron automation harness to dispatch tasks based on model reasoning strengths.'
         }
       ],
-      techStack: ['Claude Code', 'Hermes Agent', 'OpenClaw', 'MCP Servers', 'Obsidian', 'LangGraph', 'Python', 'Unattended Crons']
+      techStack: ['Claude Code', 'Hermes Agent', 'OpenClaw', 'MCP Servers', 'Obsidian', 'LangGraph', 'Python', 'Unattended Crons'],
+      githubUrl: 'https://github.com/Vishuu77/Machine-Learning-Data-Science-Projects-'
     },
     {
       id: 'omnicommerce-hub',
@@ -129,6 +131,7 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
         }
       ],
       techStack: ['React 19', 'TypeScript', 'Node.js', 'Express', 'WebSockets', 'Google Sheets DB', 'Streamlit', 'MCP Webhooks'],
+      githubUrl: 'https://github.com/Vishuu77/omnicommerce-hub',
       liveActions: { customerPortal: true, crmPortal: true }
     },
     {
@@ -162,7 +165,8 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
           solution: 'Designed a structured multi-phase prompt architecture guiding the LLM from hypothesis formulation to test execution.'
         }
       ],
-      techStack: ['Python', 'Streamlit', 'Pandas', 'LangGraph', 'Statistical Modeling', 'MCP Connectors', 'AST Validation']
+      techStack: ['Python', 'Streamlit', 'Pandas', 'LangGraph', 'Statistical Modeling', 'MCP Connectors', 'AST Validation'],
+      githubUrl: 'https://github.com/Vishuu77/Machine-Learning-Data-Science-Projects-'
     },
     {
       id: 'b2b-cad-localization',
@@ -195,7 +199,8 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
           solution: 'Conducted on-site supplier shop-floor audits and established pragmatic GD&T standards that eliminated manufacturing rejections.'
         }
       ],
-      techStack: ['Autodesk Fusion 360', '3D Parametric CAD', 'DFM Analysis', 'Sheet Metal & Fabrication', 'CNC Machining', 'B2B Sourcing', 'Bill of Materials (BOM)']
+      techStack: ['Autodesk Fusion 360', '3D Parametric CAD', 'DFM Analysis', 'Sheet Metal & Fabrication', 'CNC Machining', 'B2B Sourcing', 'Bill of Materials (BOM)'],
+      githubUrl: 'https://github.com/Vishuu77/DESIGN-'
     }
   ];
 
@@ -294,6 +299,21 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
                   <span>Read Case Study</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
+
+                {/* Direct GitHub Source Code Repository Link */}
+                {project.githubUrl && (
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => soundFX.playClick()}
+                    className="px-4 py-2.5 rounded-full border border-black/20 hover:border-black text-black text-xs font-bold transition-colors inline-flex items-center space-x-1"
+                    title={`View ${project.title} source code on GitHub`}
+                  >
+                    <Code2 className="w-3.5 h-3.5 text-neutral-600" />
+                    <span>Source Code ↗</span>
+                  </a>
+                )}
 
                 {/* For OmniCommerce Hub, render direct links to customer-portal and employee-crm */}
                 {project.id === 'omnicommerce-hub' && (

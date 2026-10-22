@@ -100,7 +100,25 @@ export const PortfolioView: React.FC<PortfolioViewProps> = ({ onSwitchPortal }) 
             </span>
           </div>
 
-          <div className="flex items-center space-x-5 font-semibold text-black">
+          <div className="flex flex-wrap items-center space-x-4 sm:space-x-5 font-semibold text-black">
+            <a
+              href="https://github.com/Vishuu77"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline underline-offset-4"
+            >
+              GitHub (@Vishuu77)
+            </a>
+            <span className="text-neutral-300">&bull;</span>
+            <a
+              href="https://github.com/Vishuu77/Vishuu77.github.io"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline underline-offset-4 text-purple-950 font-bold"
+            >
+              Portfolio Source ↗
+            </a>
+            <span className="text-neutral-300">&bull;</span>
             <button
               onClick={() => {
                 soundFX.playClick();
