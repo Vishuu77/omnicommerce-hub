@@ -97,7 +97,7 @@ export const FeaturedProjects: React.FC<FeaturedProjectsProps> = ({ onSwitchPort
         }
       ],
       techStack: ['Claude Code', 'Hermes Agent', 'OpenClaw', 'MCP Servers', 'Obsidian', 'LangGraph', 'Python', 'Unattended Crons'],
-      githubUrl: 'https://github.com/Vishuu77/Machine-Learning-Data-Science-Projects-'
+      githubUrl: 'https://github.com/Vishuu77/agentic-os'
     },
     {
       id: 'omnicommerce-hub',
